@@ -66,20 +66,17 @@
 import { onMounted, ref } from 'vue'
 
 import { request } from '@/api/client'
+import { useModuleMeta } from '@/composables/useModuleMeta'
 
 type Row = Record<string, string | number | null>
 
 const ENDPOINT = '/api/antenna'
-const columns = ["天馈编号", "天线类型", "工作频段", "所属站点", "挂高", "方位角", "驻波比", "天馈状态"]
-const actions = ["记录异常", "记录偏移", "安排调整"]
-const statuses = ["正常", "驻波异常", "下倾偏移", "已调整"]
-const stats = [{"label": "正常天馈", "value": 0}, {"label": "驻波异常数", "value": 0}, {"label": "偏移天馈数", "value": 0}]
+const { columns, actions, stats, filterFields, refreshStats } = useModuleMeta('antenna')
 
 const rows = ref<Row[]>([])
 const total = ref(0)
 const errorMessage = ref('')
 const filters = ref<Record<string, string>>({})
-const filterFields = columns.slice(0, 3)
 
 function resetFilters() {
   filters.value = {}
@@ -121,6 +118,7 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    void refreshStats()
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '天馈系统列表读取失败'
   }

@@ -5,6 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
+from app.modules import MODULE_SPECS
 from app.schemas import ActionResult, EntryPayload, PageResult
 from app.services.transmission import TransmissionService
 
@@ -12,8 +13,8 @@ router = APIRouter(prefix="/api/transmission", tags=["传输设备"])
 
 service = TransmissionService()
 
-LIST_FIELDS = ["设备编号", "传输类型", "带宽容量", "所属站点", "光口状态", "电口状态", "误码率", "设备状态"]
-STATUSES = ["正常", "光口告警", "误码超标", "已修复"]
+LIST_FIELDS = MODULE_SPECS["transmission"].fields
+STATUSES = MODULE_SPECS["transmission"].statuses
 
 
 @router.get("", response_model=PageResult[dict])

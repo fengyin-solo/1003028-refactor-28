@@ -66,20 +66,17 @@
 import { onMounted, ref } from 'vue'
 
 import { request } from '@/api/client'
+import { useModuleMeta } from '@/composables/useModuleMeta'
 
 type Row = Record<string, string | number | null>
 
 const ENDPOINT = '/api/transmission'
-const columns = ["设备编号", "传输类型", "带宽容量", "所属站点", "光口状态", "电口状态", "误码率", "设备状态"]
-const actions = ["记录告警", "记录误码", "安排修复"]
-const statuses = ["正常", "光口告警", "误码超标", "已修复"]
-const stats = [{"label": "正常传输", "value": 0}, {"label": "告警传输", "value": 0}, {"label": "误码超标传输", "value": 0}]
+const { columns, actions, stats, filterFields, refreshStats } = useModuleMeta('transmission')
 
 const rows = ref<Row[]>([])
 const total = ref(0)
 const errorMessage = ref('')
 const filters = ref<Record<string, string>>({})
-const filterFields = columns.slice(0, 3)
 
 function resetFilters() {
   filters.value = {}
@@ -121,6 +118,7 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    void refreshStats()
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '传输设备列表读取失败'
   }

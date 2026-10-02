@@ -5,6 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
+from app.modules import MODULE_SPECS
 from app.schemas import ActionResult, EntryPayload, PageResult
 from app.services.tower import TowerService
 
@@ -12,8 +13,8 @@ router = APIRouter(prefix="/api/tower", tags=["铁塔管理"])
 
 service = TowerService()
 
-LIST_FIELDS = ["铁塔编号", "铁塔类型", "设计高度", "平台数量", "所属站点", "建成年份", "上次检测", "铁塔状态"]
-STATUSES = ["正常", "倾斜超标", "锈蚀", "已拆除"]
+LIST_FIELDS = MODULE_SPECS["tower"].fields
+STATUSES = MODULE_SPECS["tower"].statuses
 
 
 @router.get("", response_model=PageResult[dict])

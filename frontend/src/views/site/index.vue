@@ -66,20 +66,17 @@
 import { onMounted, ref } from 'vue'
 
 import { request } from '@/api/client'
+import { useModuleMeta } from '@/composables/useModuleMeta'
 
 type Row = Record<string, string | number | null>
 
 const ENDPOINT = '/api/site'
-const columns = ["基站编号", "基站名称", "基站类型", "所属区县", "经纬度坐标", "铁塔高度", "入网日期", "基站状态"]
-const actions = ["登记退服", "申请退网", "拆站完成"]
-const statuses = ["运行中", "退服中", "已退网", "已拆除"]
-const stats = [{"label": "运行基站", "value": 0}, {"label": "退服基站", "value": 0}, {"label": "退网站点", "value": 0}]
+const { columns, actions, stats, filterFields, refreshStats } = useModuleMeta('site')
 
 const rows = ref<Row[]>([])
 const total = ref(0)
 const errorMessage = ref('')
 const filters = ref<Record<string, string>>({})
-const filterFields = columns.slice(0, 3)
 
 function resetFilters() {
   filters.value = {}
@@ -121,6 +118,7 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    void refreshStats()
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '基站台账列表读取失败'
   }

@@ -66,20 +66,17 @@
 import { onMounted, ref } from 'vue'
 
 import { request } from '@/api/client'
+import { useModuleMeta } from '@/composables/useModuleMeta'
 
 type Row = Record<string, string | number | null>
 
 const ENDPOINT = '/api/energyeff'
-const columns = ["项目编号", "所属站点", "改造内容", "预估节电率", "投资金额", "承包单位", "投资回收期", "项目状态"]
-const actions = ["申请立项", "开始改造", "验收评估"]
-const statuses = ["待立项", "改造中", "评估中", "已验收"]
-const stats = [{"label": "待立项项目", "value": 0}, {"label": "改造中项目", "value": 0}, {"label": "已验收项目", "value": 0}]
+const { columns, actions, stats, filterFields, refreshStats } = useModuleMeta('energyeff')
 
 const rows = ref<Row[]>([])
 const total = ref(0)
 const errorMessage = ref('')
 const filters = ref<Record<string, string>>({})
-const filterFields = columns.slice(0, 3)
 
 function resetFilters() {
   filters.value = {}
@@ -121,6 +118,7 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    void refreshStats()
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '节能改造列表读取失败'
   }

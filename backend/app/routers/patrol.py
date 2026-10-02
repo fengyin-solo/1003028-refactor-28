@@ -5,6 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
+from app.modules import MODULE_SPECS
 from app.schemas import ActionResult, EntryPayload, PageResult
 from app.services.patrol import PatrolService
 
@@ -12,8 +13,8 @@ router = APIRouter(prefix="/api/patrol", tags=["巡检作业"])
 
 service = PatrolService()
 
-LIST_FIELDS = ["任务编号", "巡检站点", "巡检人员", "计划日期", "巡检路线", "发现问题", "处置措施", "任务状态"]
-STATUSES = ["待巡检", "巡检中", "已巡检", "待复查"]
+LIST_FIELDS = MODULE_SPECS["patrol"].fields
+STATUSES = MODULE_SPECS["patrol"].statuses
 
 
 @router.get("", response_model=PageResult[dict])

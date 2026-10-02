@@ -66,20 +66,17 @@
 import { onMounted, ref } from 'vue'
 
 import { request } from '@/api/client'
+import { useModuleMeta } from '@/composables/useModuleMeta'
 
 type Row = Record<string, string | number | null>
 
 const ENDPOINT = '/api/rental'
-const columns = ["合同编号", "站点名称", "出租方", "年租金", "签约日期", "到期日期", "续租条款", "合同状态"]
-const actions = ["登记到期", "申请续租", "确认到期"]
-const statuses = ["执行中", "即将到期", "续租中", "已到期"]
-const stats = [{"label": "执行中合同", "value": 0}, {"label": "到期合同", "value": 0}, {"label": "续租合同", "value": 0}]
+const { columns, actions, stats, filterFields, refreshStats } = useModuleMeta('rental')
 
 const rows = ref<Row[]>([])
 const total = ref(0)
 const errorMessage = ref('')
 const filters = ref<Record<string, string>>({})
-const filterFields = columns.slice(0, 3)
 
 function resetFilters() {
   filters.value = {}
@@ -121,6 +118,7 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    void refreshStats()
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '场租合同列表读取失败'
   }

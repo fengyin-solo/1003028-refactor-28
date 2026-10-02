@@ -5,6 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
+from app.modules import MODULE_SPECS
 from app.schemas import ActionResult, EntryPayload, PageResult
 from app.services.fuel import FuelService
 
@@ -12,8 +13,8 @@ router = APIRouter(prefix="/api/fuel", tags=["油料管理"])
 
 service = FuelService()
 
-LIST_FIELDS = ["记录编号", "所属站点", "油料类型", "调入量", "当前存量", "发电消耗", "油料日期", "油料状态"]
-STATUSES = ["储备充足", "油量偏低", "需补油", "已补充"]
+LIST_FIELDS = MODULE_SPECS["fuel"].fields
+STATUSES = MODULE_SPECS["fuel"].statuses
 
 
 @router.get("", response_model=PageResult[dict])

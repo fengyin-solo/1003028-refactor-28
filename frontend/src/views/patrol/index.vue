@@ -66,20 +66,17 @@
 import { onMounted, ref } from 'vue'
 
 import { request } from '@/api/client'
+import { useModuleMeta } from '@/composables/useModuleMeta'
 
 type Row = Record<string, string | number | null>
 
 const ENDPOINT = '/api/patrol'
-const columns = ["任务编号", "巡检站点", "巡检人员", "计划日期", "巡检路线", "发现问题", "处置措施", "任务状态"]
-const actions = ["开始巡检", "提交巡检", "发起复查"]
-const statuses = ["待巡检", "巡检中", "已巡检", "待复查"]
-const stats = [{"label": "待巡检站点", "value": 0}, {"label": "已巡检站点", "value": 0}, {"label": "待复查站点", "value": 0}]
+const { columns, actions, stats, filterFields, refreshStats } = useModuleMeta('patrol')
 
 const rows = ref<Row[]>([])
 const total = ref(0)
 const errorMessage = ref('')
 const filters = ref<Record<string, string>>({})
-const filterFields = columns.slice(0, 3)
 
 function resetFilters() {
   filters.value = {}
@@ -121,6 +118,7 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    void refreshStats()
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '巡检作业列表读取失败'
   }

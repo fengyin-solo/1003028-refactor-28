@@ -5,6 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
+from app.modules import MODULE_SPECS
 from app.schemas import ActionResult, EntryPayload, PageResult
 from app.services.genset import GensetService
 
@@ -12,8 +13,8 @@ router = APIRouter(prefix="/api/genset", tags=["发电机组"])
 
 service = GensetService()
 
-LIST_FIELDS = ["机组编号", "机组型号", "额定功率", "所属站点", "上次试机", "油量储备", "启动状态", "机组状态"]
-STATUSES = ["待命", "发电中", "故障", "维修中"]
+LIST_FIELDS = MODULE_SPECS["genset"].fields
+STATUSES = MODULE_SPECS["genset"].statuses
 
 
 @router.get("", response_model=PageResult[dict])

@@ -5,6 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
+from app.modules import MODULE_SPECS
 from app.schemas import ActionResult, EntryPayload, PageResult
 from app.services.demolition import DemolitionService
 
@@ -12,8 +13,8 @@ router = APIRouter(prefix="/api/demolition", tags=["拆站管理"])
 
 service = DemolitionService()
 
-LIST_FIELDS = ["任务编号", "拆除站点", "拆除原因", "拆除范围", "施工队伍", "计划工期", "物资回收", "任务状态"]
-STATUSES = ["待审批", "已批复", "拆除中", "已拆除"]
+LIST_FIELDS = MODULE_SPECS["demolition"].fields
+STATUSES = MODULE_SPECS["demolition"].statuses
 
 
 @router.get("", response_model=PageResult[dict])

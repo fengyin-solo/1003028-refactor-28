@@ -5,6 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
+from app.modules import MODULE_SPECS
 from app.schemas import ActionResult, EntryPayload, PageResult
 from app.services.electricbill import ElectricbillService
 
@@ -12,8 +13,8 @@ router = APIRouter(prefix="/api/electricbill", tags=["电费管理"])
 
 service = ElectricbillService()
 
-LIST_FIELDS = ["记录编号", "所属站点", "电表读数", "用电量", "电费金额", "缴费月份", "缴费状态", "票据编号"]
-STATUSES = ["待缴费", "已缴费", "电费异常", "已核实"]
+LIST_FIELDS = MODULE_SPECS["electricbill"].fields
+STATUSES = MODULE_SPECS["electricbill"].statuses
 
 
 @router.get("", response_model=PageResult[dict])

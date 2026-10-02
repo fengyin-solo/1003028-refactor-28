@@ -5,6 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
+from app.modules import MODULE_SPECS
 from app.schemas import ActionResult, EntryPayload, PageResult
 from app.services.lightningprot import LightningprotService
 
@@ -12,8 +13,8 @@ router = APIRouter(prefix="/api/lightningprot", tags=["防雷接地"])
 
 service = LightningprotService()
 
-LIST_FIELDS = ["装置编号", "所属站点", "接地电阻", "防雷模块", "浪涌保护", "上次测试", "测试人员", "装置状态"]
-STATUSES = ["合格", "电阻超标", "模块劣化", "已更换"]
+LIST_FIELDS = MODULE_SPECS["lightningprot"].fields
+STATUSES = MODULE_SPECS["lightningprot"].statuses
 
 
 @router.get("", response_model=PageResult[dict])

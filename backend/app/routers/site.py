@@ -5,6 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
+from app.modules import MODULE_SPECS
 from app.schemas import ActionResult, EntryPayload, PageResult
 from app.services.site import SiteService
 
@@ -12,8 +13,8 @@ router = APIRouter(prefix="/api/site", tags=["基站台账"])
 
 service = SiteService()
 
-LIST_FIELDS = ["基站编号", "基站名称", "基站类型", "所属区县", "经纬度坐标", "铁塔高度", "入网日期", "基站状态"]
-STATUSES = ["运行中", "退服中", "已退网", "已拆除"]
+LIST_FIELDS = MODULE_SPECS["site"].fields
+STATUSES = MODULE_SPECS["site"].statuses
 
 
 @router.get("", response_model=PageResult[dict])

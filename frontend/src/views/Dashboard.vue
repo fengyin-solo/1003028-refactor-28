@@ -17,11 +17,14 @@
         <tr><th>业务模块</th><th>今日新增</th><th>待处理</th><th>异常量</th></tr>
       </thead>
       <tbody>
-        <tr v-for="row in moduleRows" :key="row.name">
+        <tr v-for="row in moduleRows" :key="row.key">
           <td>{{ row.name }}</td>
           <td>{{ row.created }}</td>
           <td>{{ row.pending }}</td>
           <td>{{ row.abnormal }}</td>
+        </tr>
+        <tr v-if="!moduleRows.length">
+          <td colspan="4" class="empty-state">{{ errorMessage || '暂无概览数据' }}</td>
         </tr>
       </tbody>
     </table>
@@ -31,24 +34,20 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 
-import { fetchJson } from '@/api/client'
-
-type Overview = {
-  cards: { label: string; value: number }[]
-  modules: { name: string; created: number; pending: number; abnormal: number }[]
-}
+import { fetchOverview, type Overview } from '@/api/modules'
 
 const cards = ref<Overview['cards']>([])
 const moduleRows = ref<Overview['modules']>([])
+const errorMessage = ref('')
 
 onMounted(async () => {
+  // 概览与各模块明细数自后端同一份数据，这里只负责展示
   try {
-    const payload = await fetchJson<Overview>('/api/overview')
+    const payload = await fetchOverview()
     cards.value = payload.cards
     moduleRows.value = payload.modules
-  } catch {
-    cards.value = [{"label": "业务模块", "value": 0}, {"label": "今日新增", "value": 0}]
-    moduleRows.value = [{"name": "基站台账", "created": 0, "pending": 0, "abnormal": 0}, {"name": "铁塔管理", "created": 0, "pending": 0, "abnormal": 0}, {"name": "动力配套", "created": 0, "pending": 0, "abnormal": 0}, {"name": "蓄电池组", "created": 0, "pending": 0, "abnormal": 0}, {"name": "发电机组", "created": 0, "pending": 0, "abnormal": 0}, {"name": "开关电源", "created": 0, "pending": 0, "abnormal": 0}, {"name": "空调管理", "created": 0, "pending": 0, "abnormal": 0}, {"name": "天馈系统", "created": 0, "pending": 0, "abnormal": 0}, {"name": "传输设备", "created": 0, "pending": 0, "abnormal": 0}, {"name": "馈线巡检", "created": 0, "pending": 0, "abnormal": 0}, {"name": "防雷接地", "created": 0, "pending": 0, "abnormal": 0}, {"name": "消防设施", "created": 0, "pending": 0, "abnormal": 0}, {"name": "门禁管理", "created": 0, "pending": 0, "abnormal": 0}, {"name": "巡检作业", "created": 0, "pending": 0, "abnormal": 0}, {"name": "油料管理", "created": 0, "pending": 0, "abnormal": 0}, {"name": "场租合同", "created": 0, "pending": 0, "abnormal": 0}, {"name": "电费管理", "created": 0, "pending": 0, "abnormal": 0}, {"name": "拆站管理", "created": 0, "pending": 0, "abnormal": 0}, {"name": "应急通信", "created": 0, "pending": 0, "abnormal": 0}, {"name": "节能改造", "created": 0, "pending": 0, "abnormal": 0}]
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : '概览数据读取失败'
   }
 })
 </script>

@@ -5,6 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
+from app.modules import MODULE_SPECS
 from app.schemas import ActionResult, EntryPayload, PageResult
 from app.services.energyeff import EnergyeffService
 
@@ -12,8 +13,8 @@ router = APIRouter(prefix="/api/energyeff", tags=["节能改造"])
 
 service = EnergyeffService()
 
-LIST_FIELDS = ["项目编号", "所属站点", "改造内容", "预估节电率", "投资金额", "承包单位", "投资回收期", "项目状态"]
-STATUSES = ["待立项", "改造中", "评估中", "已验收"]
+LIST_FIELDS = MODULE_SPECS["energyeff"].fields
+STATUSES = MODULE_SPECS["energyeff"].statuses
 
 
 @router.get("", response_model=PageResult[dict])

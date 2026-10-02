@@ -5,6 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
+from app.modules import MODULE_SPECS
 from app.schemas import ActionResult, EntryPayload, PageResult
 from app.services.power import PowerService
 
@@ -12,8 +13,8 @@ router = APIRouter(prefix="/api/power", tags=["动力配套"])
 
 service = PowerService()
 
-LIST_FIELDS = ["设备编号", "设备类型", "额定功率", "所属站点", "投用日期", "上次检修", "下次检修日", "设备状态"]
-STATUSES = ["正常运行", "降额运行", "故障停机", "已报废"]
+LIST_FIELDS = MODULE_SPECS["power"].fields
+STATUSES = MODULE_SPECS["power"].statuses
 
 
 @router.get("", response_model=PageResult[dict])

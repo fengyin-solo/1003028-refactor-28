@@ -66,20 +66,17 @@
 import { onMounted, ref } from 'vue'
 
 import { request } from '@/api/client'
+import { useModuleMeta } from '@/composables/useModuleMeta'
 
 type Row = Record<string, string | number | null>
 
 const ENDPOINT = '/api/power'
-const columns = ["设备编号", "设备类型", "额定功率", "所属站点", "投用日期", "上次检修", "下次检修日", "设备状态"]
-const actions = ["降额运行", "故障停机", "申请报废"]
-const statuses = ["正常运行", "降额运行", "故障停机", "已报废"]
-const stats = [{"label": "正常设备", "value": 0}, {"label": "降额设备", "value": 0}, {"label": "故障设备", "value": 0}]
+const { columns, actions, stats, filterFields, refreshStats } = useModuleMeta('power')
 
 const rows = ref<Row[]>([])
 const total = ref(0)
 const errorMessage = ref('')
 const filters = ref<Record<string, string>>({})
-const filterFields = columns.slice(0, 3)
 
 function resetFilters() {
   filters.value = {}
@@ -121,6 +118,7 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    void refreshStats()
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '动力配套列表读取失败'
   }

@@ -5,6 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
+from app.modules import MODULE_SPECS
 from app.schemas import ActionResult, EntryPayload, PageResult
 from app.services.ac import AcService
 
@@ -12,8 +13,8 @@ router = APIRouter(prefix="/api/ac", tags=["空调管理"])
 
 service = AcService()
 
-LIST_FIELDS = ["空调编号", "空调类型", "制冷量", "所属站点", "运行电流", "设定温度", "回风温度", "空调状态"]
-STATUSES = ["正常", "制冷不足", "压缩机故障", "已更换"]
+LIST_FIELDS = MODULE_SPECS["ac"].fields
+STATUSES = MODULE_SPECS["ac"].statuses
 
 
 @router.get("", response_model=PageResult[dict])

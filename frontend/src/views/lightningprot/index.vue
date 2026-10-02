@@ -66,20 +66,17 @@
 import { onMounted, ref } from 'vue'
 
 import { request } from '@/api/client'
+import { useModuleMeta } from '@/composables/useModuleMeta'
 
 type Row = Record<string, string | number | null>
 
 const ENDPOINT = '/api/lightningprot'
-const columns = ["装置编号", "所属站点", "接地电阻", "防雷模块", "浪涌保护", "上次测试", "测试人员", "装置状态"]
-const actions = ["记录超标", "记录劣化", "安排更换"]
-const statuses = ["合格", "电阻超标", "模块劣化", "已更换"]
-const stats = [{"label": "合格装置", "value": 0}, {"label": "超标装置", "value": 0}, {"label": "劣化装置", "value": 0}]
+const { columns, actions, stats, filterFields, refreshStats } = useModuleMeta('lightningprot')
 
 const rows = ref<Row[]>([])
 const total = ref(0)
 const errorMessage = ref('')
 const filters = ref<Record<string, string>>({})
-const filterFields = columns.slice(0, 3)
 
 function resetFilters() {
   filters.value = {}
@@ -121,6 +118,7 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    void refreshStats()
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '防雷接地列表读取失败'
   }

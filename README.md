@@ -15,9 +15,11 @@
 │   ├── src/stores/           会话与筛选状态
 │   └── vite.config.ts        dev server 配置（open: false）
 ├── backend/                  FastAPI（Python） 后端
+│   ├── app/modules.py        模块登记表：字段名、状态取值、动作的唯一口径
+│   ├── app/seed.py           示例数据：按登记表生成，全平台只有这一份种子
 │   ├── app/routers/          每个业务模块一组接口
-│   ├── app/services/         业务规则与状态流转
-│   └── app/store.py          内存数据仓库与示例数据
+│   ├── app/services/         业务规则与状态流转（口径取自登记表）
+│   └── app/store.py          数据仓库：JSON 落盘、初始化与版本迁移
 ├── .gitignore
 └── docker-compose.yml
 ```
@@ -69,6 +71,16 @@ npm run dev
 | 拆站管理 | `demolition` | 拆站任务 | 任务编号、拆除站点、拆除原因 |
 | 应急通信 | `emergency` | 应急保障 | 保障编号、保障类型、保障地点 |
 | 节能改造 | `energyeff` | 节能项目 | 项目编号、所属站点、改造内容 |
+
+## 示例数据与初始化
+
+- 字段名、状态取值、可执行动作只在 `backend/app/modules.py` 维护一份；
+  种子数据由 `backend/app/seed.py` 按登记表生成，前端页面经 `GET /api/modules` 取同一套口径。
+- 运营概览、模块统计卡与列表明细数自数据仓库里的同一份记录，数字互相对得上。
+- 首次启动把种子灌入 `backend/data/store.json`；重复初始化只认第一次，
+  既不会多出记录，也不会冲掉任何模块的样例。
+- 种子口径调整时把 `app/seed.py` 里的 `SEED_VERSION` 加一：已初始化的环境下次启动
+  会把旧数据整份留档到 `backend/data/archive/`（按当时那一版保留），再按新口径重灌。
 
 ## 约定
 

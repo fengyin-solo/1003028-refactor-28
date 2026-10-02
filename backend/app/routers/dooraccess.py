@@ -5,6 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
+from app.modules import MODULE_SPECS
 from app.schemas import ActionResult, EntryPayload, PageResult
 from app.services.dooraccess import DooraccessService
 
@@ -12,8 +13,8 @@ router = APIRouter(prefix="/api/dooraccess", tags=["门禁管理"])
 
 service = DooraccessService()
 
-LIST_FIELDS = ["门禁编号", "所属站点", "开门方式", "进出人员", "进出时间", "授权状态", "异常记录", "门禁状态"]
-STATUSES = ["正常", "授权过期", "非法闯入", "已修复"]
+LIST_FIELDS = MODULE_SPECS["dooraccess"].fields
+STATUSES = MODULE_SPECS["dooraccess"].statuses
 
 
 @router.get("", response_model=PageResult[dict])

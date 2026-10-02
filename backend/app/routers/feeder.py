@@ -5,6 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
+from app.modules import MODULE_SPECS
 from app.schemas import ActionResult, EntryPayload, PageResult
 from app.services.feeder import FeederService
 
@@ -12,8 +13,8 @@ router = APIRouter(prefix="/api/feeder", tags=["馈线巡检"])
 
 service = FeederService()
 
-LIST_FIELDS = ["馈线编号", "所属站点", "馈线长度", "接头数量", "防水情况", "接地电阻", "巡检日期", "馈线状态"]
-STATUSES = ["正常", "防水失效", "接地超标", "已修复"]
+LIST_FIELDS = MODULE_SPECS["feeder"].fields
+STATUSES = MODULE_SPECS["feeder"].statuses
 
 
 @router.get("", response_model=PageResult[dict])

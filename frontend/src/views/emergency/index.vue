@@ -66,20 +66,17 @@
 import { onMounted, ref } from 'vue'
 
 import { request } from '@/api/client'
+import { useModuleMeta } from '@/composables/useModuleMeta'
 
 type Row = Record<string, string | number | null>
 
 const ENDPOINT = '/api/emergency'
-const columns = ["保障编号", "保障类型", "保障地点", "通信车编号", "保障人员", "到达时间", "撤离时间", "保障状态"]
-const actions = ["启动响应", "调派车辆", "撤离保障"]
-const statuses = ["待响应", "响应中", "保障中", "已撤离"]
-const stats = [{"label": "待响应任务", "value": 0}, {"label": "保障中任务", "value": 0}, {"label": "已撤离任务", "value": 0}]
+const { columns, actions, stats, filterFields, refreshStats } = useModuleMeta('emergency')
 
 const rows = ref<Row[]>([])
 const total = ref(0)
 const errorMessage = ref('')
 const filters = ref<Record<string, string>>({})
-const filterFields = columns.slice(0, 3)
 
 function resetFilters() {
   filters.value = {}
@@ -121,6 +118,7 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    void refreshStats()
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '应急通信列表读取失败'
   }

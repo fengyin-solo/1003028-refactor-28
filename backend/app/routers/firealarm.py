@@ -5,6 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
+from app.modules import MODULE_SPECS
 from app.schemas import ActionResult, EntryPayload, PageResult
 from app.services.firealarm import FirealarmService
 
@@ -12,8 +13,8 @@ router = APIRouter(prefix="/api/firealarm", tags=["消防设施"])
 
 service = FirealarmService()
 
-LIST_FIELDS = ["设施编号", "设施类型", "所属站点", "灭火剂量", "上次检查", "有效期至", "检查人员", "设施状态"]
-STATUSES = ["合格", "压力不足", "已过期", "已更换"]
+LIST_FIELDS = MODULE_SPECS["firealarm"].fields
+STATUSES = MODULE_SPECS["firealarm"].statuses
 
 
 @router.get("", response_model=PageResult[dict])

@@ -5,6 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
+from app.modules import MODULE_SPECS
 from app.schemas import ActionResult, EntryPayload, PageResult
 from app.services.antenna import AntennaService
 
@@ -12,8 +13,8 @@ router = APIRouter(prefix="/api/antenna", tags=["天馈系统"])
 
 service = AntennaService()
 
-LIST_FIELDS = ["天馈编号", "天线类型", "工作频段", "所属站点", "挂高", "方位角", "驻波比", "天馈状态"]
-STATUSES = ["正常", "驻波异常", "下倾偏移", "已调整"]
+LIST_FIELDS = MODULE_SPECS["antenna"].fields
+STATUSES = MODULE_SPECS["antenna"].statuses
 
 
 @router.get("", response_model=PageResult[dict])

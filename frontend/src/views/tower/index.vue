@@ -66,20 +66,17 @@
 import { onMounted, ref } from 'vue'
 
 import { request } from '@/api/client'
+import { useModuleMeta } from '@/composables/useModuleMeta'
 
 type Row = Record<string, string | number | null>
 
 const ENDPOINT = '/api/tower'
-const columns = ["铁塔编号", "铁塔类型", "设计高度", "平台数量", "所属站点", "建成年份", "上次检测", "铁塔状态"]
-const actions = ["登记倾斜", "防腐处理", "拆塔完成"]
-const statuses = ["正常", "倾斜超标", "锈蚀", "已拆除"]
-const stats = [{"label": "正常铁塔", "value": 0}, {"label": "倾斜铁塔", "value": 0}, {"label": "锈蚀铁塔", "value": 0}]
+const { columns, actions, stats, filterFields, refreshStats } = useModuleMeta('tower')
 
 const rows = ref<Row[]>([])
 const total = ref(0)
 const errorMessage = ref('')
 const filters = ref<Record<string, string>>({})
-const filterFields = columns.slice(0, 3)
 
 function resetFilters() {
   filters.value = {}
@@ -121,6 +118,7 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    void refreshStats()
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '铁塔管理列表读取失败'
   }

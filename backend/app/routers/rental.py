@@ -5,6 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
+from app.modules import MODULE_SPECS
 from app.schemas import ActionResult, EntryPayload, PageResult
 from app.services.rental import RentalService
 
@@ -12,8 +13,8 @@ router = APIRouter(prefix="/api/rental", tags=["场租合同"])
 
 service = RentalService()
 
-LIST_FIELDS = ["合同编号", "站点名称", "出租方", "年租金", "签约日期", "到期日期", "续租条款", "合同状态"]
-STATUSES = ["执行中", "即将到期", "续租中", "已到期"]
+LIST_FIELDS = MODULE_SPECS["rental"].fields
+STATUSES = MODULE_SPECS["rental"].statuses
 
 
 @router.get("", response_model=PageResult[dict])

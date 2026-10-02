@@ -5,6 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
+from app.modules import MODULE_SPECS
 from app.schemas import ActionResult, EntryPayload, PageResult
 from app.services.battery import BatteryService
 
@@ -12,8 +13,8 @@ router = APIRouter(prefix="/api/battery", tags=["蓄电池组"])
 
 service = BatteryService()
 
-LIST_FIELDS = ["电池组编号", "电池类型", "额定容量", "所属站点", "放电时长", "内阻值", "投用日期", "电池状态"]
-STATUSES = ["容量合格", "容量下降", "需更换", "已更换"]
+LIST_FIELDS = MODULE_SPECS["battery"].fields
+STATUSES = MODULE_SPECS["battery"].statuses
 
 
 @router.get("", response_model=PageResult[dict])

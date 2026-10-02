@@ -5,6 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
+from app.modules import MODULE_SPECS
 from app.schemas import ActionResult, EntryPayload, PageResult
 from app.services.emergency import EmergencyService
 
@@ -12,8 +13,8 @@ router = APIRouter(prefix="/api/emergency", tags=["应急通信"])
 
 service = EmergencyService()
 
-LIST_FIELDS = ["保障编号", "保障类型", "保障地点", "通信车编号", "保障人员", "到达时间", "撤离时间", "保障状态"]
-STATUSES = ["待响应", "响应中", "保障中", "已撤离"]
+LIST_FIELDS = MODULE_SPECS["emergency"].fields
+STATUSES = MODULE_SPECS["emergency"].statuses
 
 
 @router.get("", response_model=PageResult[dict])

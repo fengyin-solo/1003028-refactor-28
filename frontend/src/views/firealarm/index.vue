@@ -66,20 +66,17 @@
 import { onMounted, ref } from 'vue'
 
 import { request } from '@/api/client'
+import { useModuleMeta } from '@/composables/useModuleMeta'
 
 type Row = Record<string, string | number | null>
 
 const ENDPOINT = '/api/firealarm'
-const columns = ["设施编号", "设施类型", "所属站点", "灭火剂量", "上次检查", "有效期至", "检查人员", "设施状态"]
-const actions = ["登记不足", "登记过期", "安排更换"]
-const statuses = ["合格", "压力不足", "已过期", "已更换"]
-const stats = [{"label": "合格设施", "value": 0}, {"label": "不足设施", "value": 0}, {"label": "过期设施", "value": 0}]
+const { columns, actions, stats, filterFields, refreshStats } = useModuleMeta('firealarm')
 
 const rows = ref<Row[]>([])
 const total = ref(0)
 const errorMessage = ref('')
 const filters = ref<Record<string, string>>({})
-const filterFields = columns.slice(0, 3)
 
 function resetFilters() {
   filters.value = {}
@@ -121,6 +118,7 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    void refreshStats()
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '消防设施列表读取失败'
   }

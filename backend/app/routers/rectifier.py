@@ -5,6 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
+from app.modules import MODULE_SPECS
 from app.schemas import ActionResult, EntryPayload, PageResult
 from app.services.rectifier import RectifierService
 
@@ -12,8 +13,8 @@ router = APIRouter(prefix="/api/rectifier", tags=["开关电源"])
 
 service = RectifierService()
 
-LIST_FIELDS = ["电源编号", "额定功率", "所属站点", "整流模块数", "负载率", "输出电压", "模块故障", "电源状态"]
-STATUSES = ["正常", "模块缺失", "输出异常", "已更换"]
+LIST_FIELDS = MODULE_SPECS["rectifier"].fields
+STATUSES = MODULE_SPECS["rectifier"].statuses
 
 
 @router.get("", response_model=PageResult[dict])
