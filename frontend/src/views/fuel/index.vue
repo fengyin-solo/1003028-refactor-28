@@ -72,8 +72,7 @@ type Row = Record<string, string | number | null>
 const ENDPOINT = '/api/fuel'
 const columns = ["记录编号", "所属站点", "油料类型", "调入量", "当前存量", "发电消耗", "油料日期", "油料状态"]
 const actions = ["记录消耗", "申请补油", "完成补油"]
-const statuses = ["储备充足", "油量偏低", "需补油", "已补充"]
-const stats = [{"label": "储备充足站点", "value": 0}, {"label": "油量偏低站点", "value": 0}, {"label": "需补油站点", "value": 0}]
+const stats = ref([{ label: '总记录数', value: 0 }, { label: '待处理', value: 0 }, { label: '异常', value: 0 }])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +120,12 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    const summary = payload.summary ?? {}
+    stats.value = [
+      { label: '总记录数', value: payload.total ?? 0 },
+      { label: '待处理', value: summary.pending ?? 0 },
+      { label: '异常', value: summary.abnormal ?? 0 },
+    ]
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '油料管理列表读取失败'
   }

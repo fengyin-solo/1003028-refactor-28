@@ -72,8 +72,7 @@ type Row = Record<string, string | number | null>
 const ENDPOINT = '/api/genset'
 const columns = ["机组编号", "机组型号", "额定功率", "所属站点", "上次试机", "油量储备", "启动状态", "机组状态"]
 const actions = ["启动发电", "关闭机组", "登记故障"]
-const statuses = ["待命", "发电中", "故障", "维修中"]
-const stats = [{"label": "待命机组", "value": 0}, {"label": "发电机组", "value": 0}, {"label": "故障机组", "value": 0}]
+const stats = ref([{ label: '总记录数', value: 0 }, { label: '待处理', value: 0 }, { label: '异常', value: 0 }])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +120,12 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    const summary = payload.summary ?? {}
+    stats.value = [
+      { label: '总记录数', value: payload.total ?? 0 },
+      { label: '待处理', value: summary.pending ?? 0 },
+      { label: '异常', value: summary.abnormal ?? 0 },
+    ]
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '发电机组列表读取失败'
   }

@@ -72,8 +72,7 @@ type Row = Record<string, string | number | null>
 const ENDPOINT = '/api/tower'
 const columns = ["铁塔编号", "铁塔类型", "设计高度", "平台数量", "所属站点", "建成年份", "上次检测", "铁塔状态"]
 const actions = ["登记倾斜", "防腐处理", "拆塔完成"]
-const statuses = ["正常", "倾斜超标", "锈蚀", "已拆除"]
-const stats = [{"label": "正常铁塔", "value": 0}, {"label": "倾斜铁塔", "value": 0}, {"label": "锈蚀铁塔", "value": 0}]
+const stats = ref([{ label: '总记录数', value: 0 }, { label: '待处理', value: 0 }, { label: '异常', value: 0 }])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +120,12 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    const summary = payload.summary ?? {}
+    stats.value = [
+      { label: '总记录数', value: payload.total ?? 0 },
+      { label: '待处理', value: summary.pending ?? 0 },
+      { label: '异常', value: summary.abnormal ?? 0 },
+    ]
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '铁塔管理列表读取失败'
   }

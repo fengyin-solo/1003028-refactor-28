@@ -1,15 +1,21 @@
-"""节能改造业务规则：状态流转、字段校验与筛选口径都收在这里。"""
+"""节能改造业务规则：状态流转、字段校验与筛选口径都收在这里。
+
+字段名与状态取值统一从 app.seed 取用，不再自己维护一份。
+"""
 from __future__ import annotations
 
 from typing import Any
 
+from app.seed import MODULE_FIELDS, STATUS_ORDER, STATUS_ATTENTION, STATUS_DISABLED, derive_flags
 from app.store import store
 
 MODULE = "energyeff"
-REQUIRED_FIELDS = ["项目编号", "所属站点", "改造内容"]
-STATUS_ORDER = ["待立项", "改造中", "评估中", "已验收"]
-ACTION_RULES = {"申请立项": "改造中", "开始改造": "评估中", "验收评估": "已验收"}
-NEGATIVE_ACTIONS = []
+LABEL = "节能改造"
+NOUN = "节能项目"
+FIELDS = MODULE_FIELDS[MODULE]
+KEYWORD_FIELD = FIELDS[0]
+REQUIRED_FIELDS = FIELDS[:3]
+ACTION_RULES = {"申请立项": STATUS_ATTENTION, "开始改造": STATUS_ATTENTION, "验收评估": STATUS_DISABLED}
 
 
 class EnergyeffService:
@@ -20,15 +26,16 @@ class EnergyeffService:
         status: str | None = None,
         page: int = 1,
         size: int = 20,
-    ) -> tuple[list[dict[str, Any]], int]:
+    ) -> tuple[list[dict[str, Any]], int, dict[str, int]]:
         rows = store.rows(MODULE)
         if keyword:
-            rows = [row for row in rows if keyword in str(row.get("项目编号", ""))]
+            rows = [row for row in rows if keyword in str(row.get(KEYWORD_FIELD, ""))]
         if status:
             rows = [row for row in rows if row.get("status") == status]
+        summary = store.summarize(rows)
         total = len(rows)
         start = max(page - 1, 0) * size
-        return rows[start:start + size], total
+        return rows[start:start + size], total, summary
 
     def get_entry(self, entry_id: int) -> dict[str, Any] | None:
         return store.find(MODULE, entry_id)
@@ -41,21 +48,21 @@ class EnergyeffService:
         entry = {"id": max((int(row.get("id", 0)) for row in rows), default=0) + 1}
         entry.update({field: values.get(field) for field in REQUIRED_FIELDS})
         entry["status"] = STATUS_ORDER[0]
-        entry["pending"] = True
-        entry["abnormal"] = False
+        entry.update(derive_flags(entry["status"]))
         rows.append(entry)
+        store.save()
         return entry, []
 
     def run_action(self, entry_id: int, action: str) -> tuple[dict[str, Any] | None, str]:
         entry = store.find(MODULE, entry_id)
         if entry is None:
-            return None, f"节能项目 {entry_id} 不存在或已归档"
+            return None, f"{NOUN} {entry_id} 不存在或已归档"
         if action not in ACTION_RULES:
-            return None, f"动作「{action}」不属于节能改造可执行范围"
+            return None, f"动作「{action}」不属于{LABEL}可执行范围"
         target = ACTION_RULES[action]
         if target not in STATUS_ORDER:
             return None, f"目标状态「{target}」不在允许的状态序列里"
         entry["status"] = target
-        entry["pending"] = target != STATUS_ORDER[-1]
-        entry["abnormal"] = action in NEGATIVE_ACTIONS
-        return entry, f"节能项目已{action}"
+        entry.update(derive_flags(target))
+        store.save()
+        return entry, f"{NOUN}已{action}"

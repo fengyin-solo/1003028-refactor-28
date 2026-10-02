@@ -3,7 +3,10 @@
     <header class="page-head">
       <div>
         <h2>运营概览</h2>
-        <p class="page-desc">汇总各业务模块的关键指标，先看总量再看异常。</p>
+        <p class="page-desc">
+          汇总各业务模块的关键指标，先看总量再看异常。
+          <span v-if="seedVersion">种子口径 {{ seedVersion }}，与各模块明细同一份数据。</span>
+        </p>
       </div>
     </header>
     <div class="stat-row">
@@ -14,12 +17,12 @@
     </div>
     <table class="data-table">
       <thead>
-        <tr><th>业务模块</th><th>今日新增</th><th>待处理</th><th>异常量</th></tr>
+        <tr><th>业务模块</th><th>记录总数</th><th>待处理</th><th>异常量</th></tr>
       </thead>
       <tbody>
         <tr v-for="row in moduleRows" :key="row.name">
-          <td>{{ row.name }}</td>
-          <td>{{ row.created }}</td>
+          <td>{{ row.label }}</td>
+          <td>{{ row.total }}</td>
           <td>{{ row.pending }}</td>
           <td>{{ row.abnormal }}</td>
         </tr>
@@ -34,21 +37,29 @@ import { onMounted, ref } from 'vue'
 import { fetchJson } from '@/api/client'
 
 type Overview = {
+  seed_version?: string
   cards: { label: string; value: number }[]
-  modules: { name: string; created: number; pending: number; abnormal: number }[]
+  modules: { name: string; label: string; total: number; pending: number; abnormal: number }[]
 }
 
 const cards = ref<Overview['cards']>([])
 const moduleRows = ref<Overview['modules']>([])
+const seedVersion = ref('')
 
 onMounted(async () => {
   try {
     const payload = await fetchJson<Overview>('/api/overview')
     cards.value = payload.cards
     moduleRows.value = payload.modules
+    seedVersion.value = payload.seed_version ?? ''
   } catch {
-    cards.value = [{"label": "业务模块", "value": 0}, {"label": "今日新增", "value": 0}]
-    moduleRows.value = [{"name": "基站台账", "created": 0, "pending": 0, "abnormal": 0}, {"name": "铁塔管理", "created": 0, "pending": 0, "abnormal": 0}, {"name": "动力配套", "created": 0, "pending": 0, "abnormal": 0}, {"name": "蓄电池组", "created": 0, "pending": 0, "abnormal": 0}, {"name": "发电机组", "created": 0, "pending": 0, "abnormal": 0}, {"name": "开关电源", "created": 0, "pending": 0, "abnormal": 0}, {"name": "空调管理", "created": 0, "pending": 0, "abnormal": 0}, {"name": "天馈系统", "created": 0, "pending": 0, "abnormal": 0}, {"name": "传输设备", "created": 0, "pending": 0, "abnormal": 0}, {"name": "馈线巡检", "created": 0, "pending": 0, "abnormal": 0}, {"name": "防雷接地", "created": 0, "pending": 0, "abnormal": 0}, {"name": "消防设施", "created": 0, "pending": 0, "abnormal": 0}, {"name": "门禁管理", "created": 0, "pending": 0, "abnormal": 0}, {"name": "巡检作业", "created": 0, "pending": 0, "abnormal": 0}, {"name": "油料管理", "created": 0, "pending": 0, "abnormal": 0}, {"name": "场租合同", "created": 0, "pending": 0, "abnormal": 0}, {"name": "电费管理", "created": 0, "pending": 0, "abnormal": 0}, {"name": "拆站管理", "created": 0, "pending": 0, "abnormal": 0}, {"name": "应急通信", "created": 0, "pending": 0, "abnormal": 0}, {"name": "节能改造", "created": 0, "pending": 0, "abnormal": 0}]
+    cards.value = [
+      { label: '业务模块', value: 0 },
+      { label: '记录总数', value: 0 },
+      { label: '待处理', value: 0 },
+      { label: '异常量', value: 0 },
+    ]
+    moduleRows.value = []
   }
 })
 </script>

@@ -72,8 +72,7 @@ type Row = Record<string, string | number | null>
 const ENDPOINT = '/api/battery'
 const columns = ["电池组编号", "电池类型", "额定容量", "所属站点", "放电时长", "内阻值", "投用日期", "电池状态"]
 const actions = ["记录下降", "安排更换", "完成更换"]
-const statuses = ["容量合格", "容量下降", "需更换", "已更换"]
-const stats = [{"label": "合格电池组", "value": 0}, {"label": "下降电池组", "value": 0}, {"label": "需更换电池组", "value": 0}]
+const stats = ref([{ label: '总记录数', value: 0 }, { label: '待处理', value: 0 }, { label: '异常', value: 0 }])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +120,12 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    const summary = payload.summary ?? {}
+    stats.value = [
+      { label: '总记录数', value: payload.total ?? 0 },
+      { label: '待处理', value: summary.pending ?? 0 },
+      { label: '异常', value: summary.abnormal ?? 0 },
+    ]
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '蓄电池组列表读取失败'
   }

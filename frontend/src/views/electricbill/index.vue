@@ -72,8 +72,7 @@ type Row = Record<string, string | number | null>
 const ENDPOINT = '/api/electricbill'
 const columns = ["记录编号", "所属站点", "电表读数", "用电量", "电费金额", "缴费月份", "缴费状态", "票据编号"]
 const actions = ["缴纳电费", "登记异常", "核实确认"]
-const statuses = ["待缴费", "已缴费", "电费异常", "已核实"]
-const stats = [{"label": "待缴费站点", "value": 0}, {"label": "已缴费站点", "value": 0}, {"label": "异常站点", "value": 0}]
+const stats = ref([{ label: '总记录数', value: 0 }, { label: '待处理', value: 0 }, { label: '异常', value: 0 }])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +120,12 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    const summary = payload.summary ?? {}
+    stats.value = [
+      { label: '总记录数', value: payload.total ?? 0 },
+      { label: '待处理', value: summary.pending ?? 0 },
+      { label: '异常', value: summary.abnormal ?? 0 },
+    ]
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '电费管理列表读取失败'
   }

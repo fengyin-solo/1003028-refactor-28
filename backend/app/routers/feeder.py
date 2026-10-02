@@ -12,22 +12,26 @@ router = APIRouter(prefix="/api/feeder", tags=["馈线巡检"])
 
 service = FeederService()
 
-LIST_FIELDS = ["馈线编号", "所属站点", "馈线长度", "接头数量", "防水情况", "接地电阻", "巡检日期", "馈线状态"]
-STATUSES = ["正常", "防水失效", "接地超标", "已修复"]
-
 
 @router.get("", response_model=PageResult[dict])
 def list_entries(
     keyword: str | None = Query(default=None, description="按馈线编号检索"),
-    status: str | None = Query(default=None, description="正常、防水失效、接地超标、已修复"),
+    status: str | None = Query(default=None, description="正常、关注、异常、停用"),
     page: int = 1,
     size: int = 20,
 ) -> PageResult[dict]:
     """按馈线编号与状态过滤馈线巡检列表；没有数据时返回空页，不报错。"""
     if size > 200:
         raise HTTPException(status_code=400, detail="每页最多 200 条，请缩小分页范围")
-    items, total = service.list_entries(keyword=keyword, status=status, page=page, size=size)
-    return PageResult(items=items, total=total, page=page, size=size)
+    items, total, summary = service.list_entries(keyword=keyword, status=status, page=page, size=size)
+    return PageResult(items=items, total=total, page=page, size=size, summary=summary)
+
+
+@router.get("/export")
+def export_entries() -> dict[str, Any]:
+    """导出馈线巡检清单：返回当前过滤条件下的全量数据。"""
+    items, total, _summary = service.list_entries(page=1, size=10000)
+    return {"module": "feeder", "total": total, "items": items}
 
 
 @router.get("/{entry_id}", response_model=dict)
@@ -56,10 +60,3 @@ def run_action(entry_id: int, payload: EntryPayload) -> ActionResult:
     if entry is None:
         return ActionResult(ok=False, message=message)
     return ActionResult(ok=True, message=message, entry=entry)
-
-
-@router.get("/export")
-def export_entries() -> dict[str, Any]:
-    """导出馈线巡检清单：返回当前过滤条件下的全量数据。"""
-    items, total = service.list_entries(page=1, size=10000)
-    return {"module": "feeder", "total": total, "items": items}

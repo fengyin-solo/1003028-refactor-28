@@ -12,22 +12,26 @@ router = APIRouter(prefix="/api/emergency", tags=["应急通信"])
 
 service = EmergencyService()
 
-LIST_FIELDS = ["保障编号", "保障类型", "保障地点", "通信车编号", "保障人员", "到达时间", "撤离时间", "保障状态"]
-STATUSES = ["待响应", "响应中", "保障中", "已撤离"]
-
 
 @router.get("", response_model=PageResult[dict])
 def list_entries(
     keyword: str | None = Query(default=None, description="按保障编号检索"),
-    status: str | None = Query(default=None, description="待响应、响应中、保障中、已撤离"),
+    status: str | None = Query(default=None, description="正常、关注、异常、停用"),
     page: int = 1,
     size: int = 20,
 ) -> PageResult[dict]:
     """按保障编号与状态过滤应急通信列表；没有数据时返回空页，不报错。"""
     if size > 200:
         raise HTTPException(status_code=400, detail="每页最多 200 条，请缩小分页范围")
-    items, total = service.list_entries(keyword=keyword, status=status, page=page, size=size)
-    return PageResult(items=items, total=total, page=page, size=size)
+    items, total, summary = service.list_entries(keyword=keyword, status=status, page=page, size=size)
+    return PageResult(items=items, total=total, page=page, size=size, summary=summary)
+
+
+@router.get("/export")
+def export_entries() -> dict[str, Any]:
+    """导出应急通信清单：返回当前过滤条件下的全量数据。"""
+    items, total, _summary = service.list_entries(page=1, size=10000)
+    return {"module": "emergency", "total": total, "items": items}
 
 
 @router.get("/{entry_id}", response_model=dict)
@@ -56,10 +60,3 @@ def run_action(entry_id: int, payload: EntryPayload) -> ActionResult:
     if entry is None:
         return ActionResult(ok=False, message=message)
     return ActionResult(ok=True, message=message, entry=entry)
-
-
-@router.get("/export")
-def export_entries() -> dict[str, Any]:
-    """导出应急通信清单：返回当前过滤条件下的全量数据。"""
-    items, total = service.list_entries(page=1, size=10000)
-    return {"module": "emergency", "total": total, "items": items}
